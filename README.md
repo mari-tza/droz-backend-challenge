@@ -18,4 +18,18 @@ Seja bem-vindo(a) ao nosso desafio técnico Droz! Este teste tem como objetivo a
 
 ## O que vamos avaliar (Diferenciais)
 
-...
+| Item                                         | Obrigatório  | Diferencial |
+| -------------------------------------------- | -----------  | ----------- |
+| Estrutura MVC                                | ✅           |             |
+| Validações com `@Valid`                      | ✅           |             |
+| Receber e retornar dados via DTO             | ✅           |             |
+| Tratamento de erros e exceções               | ✅           |             |
+| Código sem repetições                        | ✅           |             |
+| Documentação com Swagger                     | ✅           |             |
+| Credenciais não expostas                     | ✅           |             |
+| Commits pequenos e descritivos               | ✅           |             |
+| Uso de boas práticas REST                    | ✅           |             |
+| Testes unitários                             |              | ✅          |
+| ControllerAdvice para exceções               |              | ✅          |
+| Docker                                       |              | ✅          |
+| Uso adequado de logs                         |              | ✅          |

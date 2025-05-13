@@ -1,0 +1,32 @@
+name: backend_test_java
+
+services:
+  mysql_backend_test_java:
+    image: mysql:8.1.0
+    container_name: backend_test_java_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: backend-test-java
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app_backend_test_java:
+    image: maven:3.9.9-amazoncorretto-21-alpine
+    container_name: backend_test_java
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - maven_cache:/root/.m2
+    working_dir: /app
+    command: ["mvn", "spring-boot:run"]
+    depends_on:
+      - mysql_backend_test_java
+
+volumes:
+  mysql_data:
+  maven_cache:
