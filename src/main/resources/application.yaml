@@ -2,16 +2,17 @@ spring:
   application:
     name: backend-test-java
   datasource:
-    url: jdbc:mysql://mysql_backend_test_java:3306/backend-test-java
-    username: admin
-    password: admin
+    url: jdbc:mysql://localhost:3306/test
+    username: root
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
+    enabled: true
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
