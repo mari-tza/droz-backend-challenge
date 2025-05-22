@@ -38,12 +38,13 @@ public class EmpresaController {
   @ApiResponse(responseCode = "200", description = "Lista de empresas cadastradas",
           content = @Content(mediaType = "application/json",
                   array = @ArraySchema(schema = @Schema(example = """
-            {
-              "nome": "JAVA TESTE Ltda",
-              "cnpj": "12.345.678/0001-12",
-              "endereco": "Rua do teste, 123"
-            }
-        """))))
+                {
+                  "nome": "JAVA TESTE Ltda",
+                  "cnpj": "12.345.678/0001-12",
+                  "endereco": "Rua do teste, 123",
+                  "telefone": "(34) 99999-9999"
+                }
+            """))))
   @GetMapping(produces = "application/json")
   public ResponseEntity<List<Map<String, Object>>> listarEmpresas() {
     return ResponseEntity.ok(empresaService.listarEmpresas());
@@ -51,12 +52,25 @@ public class EmpresaController {
 
   @Operation(summary = "Buscar uma empresa pelo CNPJ")
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "200", description = "Empresa encontrada ou não encontrada",
+          @ApiResponse(responseCode = "200", description = "Empresa encontrada",
                   content = @Content(mediaType = "application/json", schema = @Schema(example = """
                 {
                   "nome": "JAVA TESTE Ltda",
                   "cnpj": "12.345.678/0001-12",
-                  "endereco": "Rua do teste, 123"
+                  "endereco": "Rua do teste, 123",
+                  "telefone": "(34) 99999-9999"
+                }
+            """))),
+          @ApiResponse(responseCode = "404", description = "Empresa não encontrada",
+                  content = @Content(mediaType = "application/json", schema = @Schema(example = """
+                {
+                  "erro": "Empresa não encontrada com o CNPJ fornecido."
+                }
+            """))),
+          @ApiResponse(responseCode = "500", description = "Erro interno inesperado",
+                  content = @Content(mediaType = "application/json", schema = @Schema(example = """
+                {
+                  "erro": "Erro interno inesperado."
                 }
             """)))
   })
@@ -67,11 +81,24 @@ public class EmpresaController {
 
   @Operation(summary = "Cadastrar uma nova empresa")
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "200", description = "Empresa cadastrada ou erro de validação",
+          @ApiResponse(responseCode = "200", description = "Empresa cadastrada com sucesso",
                   content = @Content(mediaType = "application/json", schema = @Schema(example = """
                 {
                   "mensagem": "Empresa cadastrada com sucesso.",
                   "linhasAfetadas": 1
+                }
+            """))),
+          @ApiResponse(responseCode = "400", description = "Erro de validação nos dados enviados",
+                  content = @Content(mediaType = "application/json", schema = @Schema(example = """
+                {
+                  "nome": "O nome é obrigatório.",
+                  "cnpj": "O CNPJ deve ter exatamente 14 dígitos numéricos."
+                }
+            """))),
+          @ApiResponse(responseCode = "500", description = "Erro interno inesperado",
+                  content = @Content(mediaType = "application/json", schema = @Schema(example = """
+                {
+                  "erro": "Erro interno inesperado."
                 }
             """)))
   })
@@ -82,11 +109,30 @@ public class EmpresaController {
 
   @Operation(summary = "Atualizar dados de uma empresa pelo CNPJ")
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "200", description = "Empresa atualizada ou erro de validação",
+          @ApiResponse(responseCode = "200", description = "Empresa atualizada com sucesso",
                   content = @Content(mediaType = "application/json", schema = @Schema(example = """
                 {
                   "mensagem": "Empresa atualizada com sucesso.",
                   "linhasAfetadas": 1
+                }
+            """))),
+          @ApiResponse(responseCode = "400", description = "Erro de validação nos dados enviados",
+                  content = @Content(mediaType = "application/json", schema = @Schema(example = """
+                {
+                  "nome": "O nome é obrigatório.",
+                  "endereco": "O endereço pode ter no máximo 200 caracteres."
+                }
+            """))),
+          @ApiResponse(responseCode = "404", description = "Empresa não encontrada",
+                  content = @Content(mediaType = "application/json", schema = @Schema(example = """
+                {
+                  "erro": "Nenhuma empresa encontrada com o CNPJ fornecido."
+                }
+            """))),
+          @ApiResponse(responseCode = "500", description = "Erro interno inesperado",
+                  content = @Content(mediaType = "application/json", schema = @Schema(example = """
+                {
+                  "erro": "Erro interno inesperado."
                 }
             """)))
   })
