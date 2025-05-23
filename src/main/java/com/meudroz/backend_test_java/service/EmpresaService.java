@@ -1,6 +1,7 @@
 package com.meudroz.backend_test_java.service;
 
 import com.meudroz.backend_test_java.dto.EmpresaDTO;
+import com.meudroz.backend_test_java.repository.EmpresaRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -14,34 +15,26 @@ import java.util.Map;
 public class EmpresaService {
 
     private static final Logger log = LoggerFactory.getLogger(EmpresaService.class);
-    private final JdbcTemplate jdbcTemplate;
+    private final EmpresaRepository repository;
 
-    public EmpresaService(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public EmpresaService(EmpresaRepository repository) {
+        this.repository = repository;
     }
 
     public List<Map<String, Object>> listarEmpresas() {
         log.info("Listando todas as empresas cadastradas");
-        String sql = "SELECT nome, cnpj, endereco, telefone FROM empresas";
-        List<Map<String, Object>> empresas = jdbcTemplate.queryForList(sql);
-
-        for (Map<String, Object> empresa : empresas) {
-            formatarCnpj(empresa);
-        }
-
+        List<Map<String, Object>> empresas = repository.findAll();
+        empresas.forEach(this::formatarCnpj);
         return empresas;
     }
 
     public Map<String, Object> buscarPorCnpj(String cnpj) {
         log.info("Buscando empresa pelo CNPJ: {}", cnpj);
-        String sql = "SELECT nome, cnpj, endereco, telefone FROM empresas WHERE cnpj = ?";
-        List<Map<String, Object>> resultado = jdbcTemplate.queryForList(sql, cnpj);
-
+        List<Map<String, Object>> resultado = repository.findByCnpj(cnpj);
         if (resultado.isEmpty()) {
             log.warn("Empresa com CNPJ {} não encontrada", cnpj);
             return Map.of("erro", "Empresa não encontrada com o CNPJ fornecido.");
         }
-
         Map<String, Object> empresa = resultado.get(0);
         formatarCnpj(empresa);
         return empresa;
@@ -50,17 +43,8 @@ public class EmpresaService {
     public Map<String, Object> cadastrarEmpresa(EmpresaDTO empresa) {
         log.info("Cadastrando empresa: {}", empresa.nome());
         Map<String, Object> response = new HashMap<>();
-
         String cnpjLimpo = empresa.cnpj().replaceAll("[^0-9]", "");
-
-        String sql = "INSERT INTO empresas (nome, cnpj, endereco, telefone) VALUES (?, ?, ?, ?)";
-        int rows = jdbcTemplate.update(sql,
-                empresa.nome(),
-                cnpjLimpo,
-                empresa.endereco(),
-                empresa.telefone());
-
-        log.info("Empresa {} cadastrada com sucesso ({} linha(s) afetada(s))", empresa.nome(), rows);
+        int rows = repository.save(empresa, cnpjLimpo);
         response.put("mensagem", "Empresa cadastrada com sucesso.");
         response.put("linhasAfetadas", rows);
         return response;
@@ -69,21 +53,12 @@ public class EmpresaService {
     public Map<String, Object> atualizarEmpresa(String cnpj, EmpresaDTO empresa) {
         log.info("Atualizando empresa de CNPJ {} para nome {}", cnpj, empresa.nome());
         Map<String, Object> response = new HashMap<>();
-
-        String sql = "UPDATE empresas SET nome = ?, endereco = ?, telefone = ? WHERE cnpj = ?";
-        int rows = jdbcTemplate.update(sql,
-                empresa.nome(),
-                empresa.endereco(),
-                empresa.telefone(),
-                cnpj);
-
+        int rows = repository.update(empresa, cnpj);
         if (rows == 0) {
             log.warn("Nenhuma empresa encontrada para o CNPJ {}", cnpj);
             response.put("erro", "Nenhuma empresa encontrada com o CNPJ fornecido.");
             return response;
         }
-
-        log.info("Empresa com CNPJ {} atualizada com sucesso ({} linha(s) afetada(s))", cnpj, rows);
         response.put("mensagem", "Empresa atualizada com sucesso.");
         response.put("linhasAfetadas", rows);
         return response;
