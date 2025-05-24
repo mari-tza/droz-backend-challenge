@@ -4,9 +4,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.*;
 
 @Entity
 @Table(name = "empresas")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class Empresa {
 
     @Id
@@ -21,14 +26,4 @@ public class Empresa {
 
     @Column(length = 20)
     private String telefone;
-
-    public Empresa() {
-    }
-
-    public Empresa(String cnpj, String nome, String endereco, String telefone) {
-        this.cnpj = cnpj;
-        this.nome = nome;
-        this.endereco = endereco;
-        this.telefone = telefone;
-    }
 }
