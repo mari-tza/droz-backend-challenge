@@ -1,19 +1,19 @@
 package com.meudroz.backend_test_java.service;
 
-import com.meudroz.backend_test_java.dto.EmpresaDTO;
+import com.meudroz.backend_test_java.dto.request.EmpresaRequestDTO;
+import com.meudroz.backend_test_java.exception.EmpresaNaoEncontradaException;
 import com.meudroz.backend_test_java.repository.EmpresaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class EmpresaServiceTest {
 
@@ -72,7 +72,7 @@ class EmpresaServiceTest {
 
     @Test
     void deveCadastrarEmpresaComSucesso() {
-        EmpresaDTO dto = new EmpresaDTO("Empresa Nova", "12345678000112", "Rua Nova", "34988887777");
+        EmpresaRequestDTO dto = new EmpresaRequestDTO("Empresa Nova", "12345678000112", "Rua Nova", "34988887777");
         when(empresaRepository.save(eq(dto), anyString())).thenReturn(1);
 
         Map<String, Object> resultado = empresaService.cadastrarEmpresa(dto);
@@ -83,22 +83,30 @@ class EmpresaServiceTest {
 
     @Test
     void deveAtualizarEmpresaComSucesso() {
-        EmpresaDTO dto = new EmpresaDTO("Empresa Atualizada", "12345678000112", "Rua Nova", "34988887777");
-        when(empresaRepository.update(eq(dto), eq(dto.cnpj()))).thenReturn(1);
+        EmpresaRequestDTO dto = new EmpresaRequestDTO("Empresa Atualizada", "12345678000112", "Rua Nova", "34988887777");
 
-        Map<String, Object> resultado = empresaService.atualizarEmpresa(dto.cnpj(), dto);
+        when(empresaRepository.findByCnpj(dto.cnpj()))
+                .thenReturn(Optional.of(dto));
 
-        assertEquals("Empresa atualizada com sucesso.", resultado.get("mensagem"));
-        assertEquals(1, resultado.get("linhasAfetadas"));
+        doNothing().when(empresaRepository).update(eq(dto), eq(dto.cnpj()));
+
+        assertDoesNotThrow(() -> empresaService.atualizarEmpresa(dto.cnpj(), dto));
+        verify(empresaRepository).update(dto, dto.cnpj());
     }
 
     @Test
-    void deveRetornarErroAoAtualizarEmpresaInexistente() {
-        EmpresaDTO dto = new EmpresaDTO("Empresa Qualquer", "00000000000000", "Rua X", "3488888888");
-        when(empresaRepository.update(eq(dto), eq(dto.cnpj()))).thenReturn(0);
+    void deveLancarExcecaoQuandoEmpresaNaoEncontrada() {
+        EmpresaRequestDTO dto = new EmpresaRequestDTO("Empresa Qualquer", "00000000000000", "Rua X", "3488888888");
 
-        Map<String, Object> resultado = empresaService.atualizarEmpresa(dto.cnpj(), dto);
+        when(empresaRepository.findByCnpj(dto.cnpj()))
+                .thenReturn(Optional.empty());
 
-        assertEquals("Nenhuma empresa encontrada com o CNPJ fornecido.", resultado.get("erro"));
+        EmpresaNaoEncontradaException ex = assertThrows(
+                EmpresaNaoEncontradaException.class,
+                () -> empresaService.atualizarEmpresa(dto.cnpj(), dto)
+        );
+
+        assertEquals("Nenhuma empresa encontrada com o CNPJ fornecido.", ex.getMessage());
+        verify(empresaRepository, never()).update(any(), any());
     }
 }

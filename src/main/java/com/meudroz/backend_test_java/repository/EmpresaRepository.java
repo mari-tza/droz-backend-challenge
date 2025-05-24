@@ -1,11 +1,12 @@
 package com.meudroz.backend_test_java.repository;
 
-import com.meudroz.backend_test_java.dto.EmpresaDTO;
+import com.meudroz.backend_test_java.dto.request.EmpresaRequestDTO;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class EmpresaRepository {
@@ -21,20 +22,28 @@ public class EmpresaRepository {
         return jdbcTemplate.queryForList(sql);
     }
 
-    public List<Map<String, Object>> findByCnpj(String cnpj) {
+    public Optional<EmpresaRequestDTO> findByCnpj(String cnpj) {
         String sql = "SELECT nome, cnpj, endereco, telefone FROM empresas WHERE cnpj = ?";
-        return jdbcTemplate.queryForList(sql, cnpj);
+        List<EmpresaRequestDTO> resultados = jdbcTemplate.query(sql, new Object[]{cnpj},
+                (rs, rowNum) -> new EmpresaRequestDTO(
+                        rs.getString("nome"),
+                        rs.getString("cnpj"),
+                        rs.getString("endereco"),
+                        rs.getString("telefone")
+                ));
+
+        return resultados.stream().findFirst();
     }
 
-    public int save(EmpresaDTO empresa, String cnpjLimpo) {
+    public int save(EmpresaRequestDTO empresa, String cnpjLimpo) {
         String sql = "INSERT INTO empresas (nome, cnpj, endereco, telefone) VALUES (?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
                 empresa.nome(), cnpjLimpo, empresa.endereco(), empresa.telefone());
     }
 
-    public int update(EmpresaDTO empresa, String cnpj) {
+    public void update(EmpresaRequestDTO empresa, String cnpj) {
         String sql = "UPDATE empresas SET nome = ?, endereco = ?, telefone = ? WHERE cnpj = ?";
-        return jdbcTemplate.update(sql,
+        jdbcTemplate.update(sql,
                 empresa.nome(), empresa.endereco(), empresa.telefone(), cnpj);
     }
 }
