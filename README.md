@@ -14,7 +14,7 @@ A proposta era:
 
 - Garantir o correto funcionamento da aplicação com essas alterações.
 
-## O que foi implementado
+## Tecnologias utilizadas
 - Java 21
 - Spring Boot
 - Spring Data JPA
