@@ -1,15 +1,14 @@
 package com.meudroz.backend_test_java.service;
 
+import com.meudroz.backend_test_java.domain.Empresa;
 import com.meudroz.backend_test_java.dto.request.EmpresaRequestDTO;
 import com.meudroz.backend_test_java.exception.EmpresaNaoEncontradaException;
+import com.meudroz.backend_test_java.mappers.EmpresaMapper;
 import com.meudroz.backend_test_java.repository.EmpresaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -18,95 +17,117 @@ import static org.mockito.Mockito.*;
 class EmpresaServiceTest {
 
     private EmpresaRepository empresaRepository;
+    private EmpresaMapper empresaMapper;
     private EmpresaService empresaService;
 
     @BeforeEach
     void setUp() {
         empresaRepository = mock(EmpresaRepository.class);
-        empresaService = new EmpresaService(empresaRepository);
+        empresaMapper = new EmpresaMapper();
+        empresaService = new EmpresaService(empresaRepository, empresaMapper);
     }
 
     @Test
-    void deveListarEmpresasComCnpjFormatado() {
-        Map<String, Object> empresa = new HashMap<>();
-        empresa.put("nome", "Empresa Teste");
-        empresa.put("cnpj", "12345678000112");
-        empresa.put("endereco", "Rua Teste");
-        empresa.put("telefone", "34999999999");
+    void deveListarEmpresasComSucesso() {
+        var empresa = new Empresa(
+                UUID.randomUUID(),
+                "12345678000112",
+                "Empresa Teste",
+                "Rua Teste",
+                "(34) 99999-9999"
+        );
 
         when(empresaRepository.findAll()).thenReturn(List.of(empresa));
 
-        List<Map<String, Object>> resultado = empresaService.listarEmpresas();
+        var resultado = empresaService.listarEmpresas();
 
         assertEquals(1, resultado.size());
-        assertEquals("Empresa Teste", resultado.get(0).get("nome"));
-        assertEquals("12.345.678/0001-12", resultado.get(0).get("cnpj"));
+        var dto = resultado.getFirst();
+
+        assertAll(
+                () -> assertEquals("Empresa Teste", dto.nome()),
+                () -> assertEquals("12345678000112", dto.cnpj()),
+                () -> assertEquals("Rua Teste", dto.endereco()),
+                () -> assertEquals("(34) 99999-9999", dto.telefone())
+        );
     }
 
     @Test
     void deveRetornarEmpresaPeloCnpj() {
-        String cnpj = "12345678000112";
-        Map<String, Object> empresa = new HashMap<>();
-        empresa.put("nome", "Empresa Teste");
-        empresa.put("cnpj", "12345678000112");
-        empresa.put("endereco", "Rua Teste");
-        empresa.put("telefone", "34999999999");
+        var empresa = new Empresa(
+                UUID.randomUUID(),
+                "12345678000112",
+                "Empresa Teste",
+                "Rua Teste",
+                "(34) 99999-9999"
+        );
 
-        when(empresaRepository.findByCnpj(cnpj)).thenReturn(List.of(empresa));
+        when(empresaRepository.findByCnpj("12345678000112")).thenReturn(Optional.of(empresa));
 
-        Map<String, Object> resultado = empresaService.buscarPorCnpj(cnpj);
+        var resultado = empresaService.buscarPorCnpj("12345678000112");
 
-        assertEquals("Empresa Teste", resultado.get("nome"));
-        assertEquals("12.345.678/0001-12", resultado.get("cnpj"));
-    }
-
-    @Test
-    void deveRetornarErroSeEmpresaNaoForEncontrada() {
-        String cnpj = "00000000000000";
-        when(empresaRepository.findByCnpj(cnpj)).thenReturn(List.of());
-
-        Map<String, Object> resultado = empresaService.buscarPorCnpj(cnpj);
-
-        assertEquals("Empresa não encontrada com o CNPJ fornecido.", resultado.get("erro"));
-    }
-
-    @Test
-    void deveCadastrarEmpresaComSucesso() {
-        EmpresaRequestDTO dto = new EmpresaRequestDTO("Empresa Nova", "12345678000112", "Rua Nova", "34988887777");
-        when(empresaRepository.save(eq(dto), anyString())).thenReturn(1);
-
-        Map<String, Object> resultado = empresaService.cadastrarEmpresa(dto);
-
-        assertEquals("Empresa cadastrada com sucesso.", resultado.get("mensagem"));
-        assertEquals(1, resultado.get("linhasAfetadas"));
-    }
-
-    @Test
-    void deveAtualizarEmpresaComSucesso() {
-        EmpresaRequestDTO dto = new EmpresaRequestDTO("Empresa Atualizada", "12345678000112", "Rua Nova", "34988887777");
-
-        when(empresaRepository.findByCnpj(dto.cnpj()))
-                .thenReturn(Optional.of(dto));
-
-        doNothing().when(empresaRepository).update(eq(dto), eq(dto.cnpj()));
-
-        assertDoesNotThrow(() -> empresaService.atualizarEmpresa(dto.cnpj(), dto));
-        verify(empresaRepository).update(dto, dto.cnpj());
+        assertAll(
+                () -> assertEquals("Empresa Teste", resultado.nome()),
+                () -> assertEquals("12345678000112", resultado.cnpj())
+        );
     }
 
     @Test
     void deveLancarExcecaoQuandoEmpresaNaoEncontrada() {
-        EmpresaRequestDTO dto = new EmpresaRequestDTO("Empresa Qualquer", "00000000000000", "Rua X", "3488888888");
+        when(empresaRepository.findByCnpj("00000000000000")).thenReturn(Optional.empty());
 
-        when(empresaRepository.findByCnpj(dto.cnpj()))
-                .thenReturn(Optional.empty());
+        var excecao = assertThrows(
+                EmpresaNaoEncontradaException.class,
+                () -> empresaService.buscarPorCnpj("00000000000000")
+        );
 
-        EmpresaNaoEncontradaException ex = assertThrows(
+        assertEquals("Nenhuma empresa encontrada com o CNPJ fornecido.", excecao.getMessage());
+    }
+
+    @Test
+    void deveCadastrarEmpresaComSucesso() {
+        var dto = new EmpresaRequestDTO("Empresa Nova", "12345678000112", "Rua Nova", "(34) 98888-7777");
+        var entity = new Empresa(UUID.randomUUID(), dto.cnpj(), dto.nome(), dto.endereco(), dto.telefone());
+
+        when(empresaRepository.save(any(Empresa.class))).thenReturn(entity);
+
+        var resultado = empresaService.cadastrarEmpresa(dto);
+
+        assertAll(
+                () -> assertEquals("Empresa Nova", resultado.nome()),
+                () -> assertEquals("12345678000112", resultado.cnpj())
+        );
+    }
+
+    @Test
+    void deveAtualizarEmpresaComSucesso() {
+        var dto = new EmpresaRequestDTO("Empresa Atualizada", "12345678000112", "Rua Nova", "(34) 98888-7777");
+        var entity = new Empresa(UUID.randomUUID(), dto.cnpj(), "Antigo Nome", "End Antigo", "9999");
+
+        when(empresaRepository.findByCnpj(dto.cnpj())).thenReturn(Optional.of(entity));
+        when(empresaRepository.save(any(Empresa.class))).thenReturn(entity);
+
+        assertDoesNotThrow(() -> empresaService.atualizarEmpresa(dto.cnpj(), dto));
+
+        verify(empresaRepository).save(argThat(e ->
+                e.getNome().equals(dto.nome()) &&
+                        e.getEndereco().equals(dto.endereco()) &&
+                        e.getTelefone().equals(dto.telefone())
+        ));
+    }
+
+    @Test
+    void deveLancarExcecaoAoAtualizarEmpresaInexistente() {
+        var dto = new EmpresaRequestDTO("Empresa Inexistente", "00000000000000", "Rua X", "3499999999");
+
+        when(empresaRepository.findByCnpj(dto.cnpj())).thenReturn(Optional.empty());
+
+        var ex = assertThrows(
                 EmpresaNaoEncontradaException.class,
                 () -> empresaService.atualizarEmpresa(dto.cnpj(), dto)
         );
 
         assertEquals("Nenhuma empresa encontrada com o CNPJ fornecido.", ex.getMessage());
-        verify(empresaRepository, never()).update(any(), any());
+        verify(empresaRepository, never()).save(any());
     }
 }
