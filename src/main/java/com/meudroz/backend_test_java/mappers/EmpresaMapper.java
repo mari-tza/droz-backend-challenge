@@ -13,7 +13,12 @@ import org.springframework.stereotype.Component;
 public class EmpresaMapper {
 
     public Empresa toEntity(EmpresaRequestDTO dto) {
-        return new Empresa(dto.cnpj(), dto.nome(), dto.endereco(), dto.telefone());
+        return Empresa.builder()
+                .cnpj(dto.cnpj())
+                .nome(dto.nome())
+                .endereco(dto.endereco())
+                .telefone(dto.telefone())
+                .build();
     }
 
     public EmpresaResponseDTO toResponseDTO(Empresa empresa) {
