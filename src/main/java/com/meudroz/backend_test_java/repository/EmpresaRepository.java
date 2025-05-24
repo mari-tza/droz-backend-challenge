@@ -1,6 +1,6 @@
 package com.meudroz.backend_test_java.repository;
 
-import com.meudroz.backend_test_java.domain.Empresa;
+import com.meudroz.backend_test_java.entity.Empresa;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

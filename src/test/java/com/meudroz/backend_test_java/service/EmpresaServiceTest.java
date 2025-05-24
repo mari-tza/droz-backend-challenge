@@ -1,9 +1,9 @@
 package com.meudroz.backend_test_java.service;
 
-import com.meudroz.backend_test_java.domain.Empresa;
+import com.meudroz.backend_test_java.entity.Empresa;
 import com.meudroz.backend_test_java.dto.request.EmpresaRequestDTO;
 import com.meudroz.backend_test_java.exception.EmpresaNaoEncontradaException;
-import com.meudroz.backend_test_java.mappers.EmpresaMapper;
+import com.meudroz.backend_test_java.mapper.EmpresaMapper;
 import com.meudroz.backend_test_java.repository.EmpresaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

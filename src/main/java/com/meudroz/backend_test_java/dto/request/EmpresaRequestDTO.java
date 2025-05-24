@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-@Schema(name = "EmpresaDTO", description = "Objeto que representa os dados de uma empresa")
+@Schema(name = "EmpresaRequestDTO", description = "Dados de uma empresa")
 public record EmpresaRequestDTO(
 
         @NotBlank(message = "O nome é obrigatório.")
@@ -26,4 +26,5 @@ public record EmpresaRequestDTO(
         @Schema(description = "Telefone de contato da empresa", example = "(34) 99999-9999", maxLength = 20)
         String telefone
 
-) {}
+) {
+}

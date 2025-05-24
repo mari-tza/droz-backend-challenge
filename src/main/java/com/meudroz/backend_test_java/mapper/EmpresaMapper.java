@@ -1,8 +1,8 @@
-package com.meudroz.backend_test_java.mappers;
+package com.meudroz.backend_test_java.mapper;
 
-import com.meudroz.backend_test_java.domain.Empresa;
 import com.meudroz.backend_test_java.dto.request.EmpresaRequestDTO;
 import com.meudroz.backend_test_java.dto.response.EmpresaResponseDTO;
+import com.meudroz.backend_test_java.entity.Empresa;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

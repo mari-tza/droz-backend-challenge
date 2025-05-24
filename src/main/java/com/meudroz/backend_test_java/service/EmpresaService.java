@@ -1,24 +1,26 @@
 package com.meudroz.backend_test_java.service;
 
-import com.meudroz.backend_test_java.domain.Empresa;
+import com.meudroz.backend_test_java.entity.Empresa;
 import com.meudroz.backend_test_java.dto.request.EmpresaRequestDTO;
 import com.meudroz.backend_test_java.dto.response.EmpresaResponseDTO;
+import com.meudroz.backend_test_java.exception.CnpjJaCadastradoException;
 import com.meudroz.backend_test_java.exception.EmpresaNaoEncontradaException;
-import com.meudroz.backend_test_java.mappers.EmpresaMapper;
+import com.meudroz.backend_test_java.mapper.EmpresaMapper;
 import com.meudroz.backend_test_java.repository.EmpresaRepository;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@Slf4j
 @RequiredArgsConstructor
+@Service
 public class EmpresaService {
 
-    private static final Logger log = LoggerFactory.getLogger(EmpresaService.class);
+    private static final String EMPRESA_NAO_ENCONTRADA = "Empresa com CNPJ {} não encontrada";
+
     private final EmpresaRepository repository;
     private final EmpresaMapper empresaMapper;
 
@@ -33,7 +35,7 @@ public class EmpresaService {
         log.info("Buscando empresa pelo CNPJ: {}", cnpj);
         Empresa empresa = repository.findByCnpj(cnpj)
                 .orElseThrow(() -> {
-                    log.warn("Empresa com CNPJ {} não encontrada", cnpj);
+                    log.warn(EMPRESA_NAO_ENCONTRADA, cnpj);
                     return new EmpresaNaoEncontradaException("Nenhuma empresa encontrada com o CNPJ fornecido.");
                 });
 
@@ -42,6 +44,10 @@ public class EmpresaService {
 
     public EmpresaResponseDTO cadastrarEmpresa(EmpresaRequestDTO dto) {
         log.info("Cadastrando empresa: {}", dto.nome());
+
+        repository.findByCnpj(dto.cnpj()).ifPresent(empresa -> {
+            throw new CnpjJaCadastradoException("Já existe uma empresa cadastrada com esse CNPJ.");
+        });
 
         Empresa novaEmpresa = empresaMapper.toEntity(dto);
         Empresa salva = repository.save(novaEmpresa);
@@ -55,7 +61,7 @@ public class EmpresaService {
 
         Empresa existente = repository.findByCnpj(cnpj)
                 .orElseThrow(() -> {
-                    log.warn("Empresa com CNPJ {} não encontrada", cnpj);
+                    log.warn(EMPRESA_NAO_ENCONTRADA, cnpj);
                     return new EmpresaNaoEncontradaException("Nenhuma empresa encontrada com o CNPJ fornecido.");
                 });
 

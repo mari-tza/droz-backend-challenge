@@ -17,4 +17,5 @@ public record EmpresaResponseDTO(
         @Schema(description = "Telefone de contato da empresa", example = "(34) 99999-9999")
         String telefone
 
-) {}
+) {
+}

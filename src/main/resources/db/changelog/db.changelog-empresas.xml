@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
-  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
   <changeSet id="2025100931" author="vcruz">
     <createTable tableName="empresas">
-      <column name="id" type="BIGINT" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false" />
+      <column name="id" type="BINARY(16)">
+        <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="nome" type="VARCHAR(100)">
-        <constraints nullable="false" />
+        <constraints nullable="false"/>
       </column>
-      <column name="cnpj" type="VARCHAR(18)">
-        <constraints nullable="false" unique="true" />
+      <column name="cnpj" type="VARCHAR(14)">
+        <constraints nullable="false" unique="true"/>
       </column>
-      <column name="endereco" type="VARCHAR(200)" />
+      <column name="endereco" type="VARCHAR(200)"/>
+      <column name="telefone" type="VARCHAR(20)"/>
     </createTable>
   </changeSet>
+
 </databaseChangeLog>
